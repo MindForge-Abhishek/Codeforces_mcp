@@ -206,7 +206,7 @@ def main():
     # SSE is required for Claude to connect to this as a remote connector
     # stdio (the old transport) only works for local command-line tools
     # SSE means the server runs as an HTTP server that Claude can reach over the internet
-    server.run(transport='sse')
+    server.run(transport='sse', host ='0.0.0.0', port=8000)
 
 
 # Standard Python entry point - only runs main() if this file is executed directly
