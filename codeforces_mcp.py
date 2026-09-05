@@ -209,7 +209,7 @@ def main():
     app = server.sse_app()
     import uvicorn
 
-    uvicorn.run(app, host ='0.0.0.0', port=8000)
+    uvicorn.run(app, host ='0.0.0.0', port=8000,proxy_headers=True,forwarded_allow_ips="*")
 
 
 # Standard Python entry point - only runs main() if this file is executed directly
