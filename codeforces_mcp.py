@@ -2,6 +2,8 @@
 # MCP (Model Context Protocol) is what lets Claude talk to external services
 from mcp.server.fastmcp import FastMCP
 
+from mcp.server.transport_security import TransportSecuritySettings
+
 # Import logging - this lets us print debug/info messages to the terminal
 import logging
 
@@ -74,12 +76,24 @@ api = CodeforcesAPI()
 
 
 def create_server():
-    # Create the MCP server and give it a name
-    # This name appears when Claude lists available tools
-    server = FastMCP(name="codeforces-mcp-server")
+    # Configure Host header validation for local development and Railway.
+    # This protects the server against DNS rebinding attacks.
+    transport_security = TransportSecuritySettings(
+        allowed_hosts=[
+            "localhost:*",
+            "127.0.0.1:*",
+            "codeforcesmcp-claude.up.railway.app",
+        ]
+    )
+    # Create the MCP server and register the transport security settings.
+    server = FastMCP(
+        name="codeforces-mcp-server",
+        transport_security=transport_security,
+    )
+
 
     # ── TOOL: Get latest submissions for a user ──────────────────────────────
-    # This is the main tool we use for logging - fetches your recent CF submissions
+    # Fetch recent submissions for a Codeforces user.
     @server.tool(
         name="get_user_submissions",
         description="Get recent submissions for a Codeforces user. Returns problem name, rating, tags, verdict, and contest ID."
@@ -202,14 +216,17 @@ def main():
 
     logger.info("Starting Codeforces MCP server...")
 
-    # Run the server using SSE (Server-Sent Events) transport
-    # SSE is required for Claude to connect to this as a remote connector
-    # stdio (the old transport) only works for local command-line tools
-    # SSE means the server runs as an HTTP server that Claude can reach over the internet
+    # Run the server using Streamable HTTP transport.
+    # This is the current MCP transport for remote HTTP connections.
     app = server.streamable_http_app()
     import uvicorn
 
-    uvicorn.run(app, host ='0.0.0.0', port=8000,proxy_headers=True,forwarded_allow_ips="*")
+    uvicorn.run(
+        app, 
+        host ='0.0.0.0',
+        port=8000,
+        proxy_headers=True,
+        forwarded_allow_ips="*")
 
 
 # Standard Python entry point - only runs main() if this file is executed directly
