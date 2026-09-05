@@ -209,7 +209,7 @@ def main():
     app = server.sse_app()
     import uvicorn
 
-    server.run(transport='sse', host ='0.0.0.0', port=8000)
+    uvicorn.run(transport='sse', host ='0.0.0.0', port=8000)
 
 
 # Standard Python entry point - only runs main() if this file is executed directly
